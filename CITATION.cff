@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this framework, please cite it as below."
+authors:
+  - family-names: Ibrahim
+    given-names: Aboubakr
+title: "QRS Detection Algorithm Comparison"
+version: 1.0.0
+date-released: 2026-07-19
+url: "https://github.com/Aboubakr-Ibrahim/qrs-detection-algorithm-comparison"
+license: MIT
