@@ -8,8 +8,20 @@ classdef test_annotation_matching < matlab.unittest.TestCase
         function oneToOnePreventsDoubleMatch(testCase)
             addpath('src');
             match=match_annotations([98 102],[100],5);
-            testCase.verifyEqual(match.TP,1)
-            testCase.verifyEqual(match.FP,1)
+            testCase.verifyEqual([match.TP match.FP match.FN],[1 1 0])
+        end
+        function chronologicalMatchPreservesCardinality(testCase)
+            addpath('src');
+            % Nearest-neighbour matching can consume reference 104 for
+            % detection 103 and incorrectly leave detection 105 unmatched.
+            match=match_annotations([103 105],[100 104],3);
+            testCase.verifyEqual([match.TP match.FP match.FN],[2 0 0])
+            testCase.verifyEqual(match.pairs,[103 100;105 104])
+        end
+        function emptyDetectionIsHandled(testCase)
+            addpath('src');
+            match=match_annotations([], [100 200], 5);
+            testCase.verifyEqual([match.TP match.FP match.FN],[0 0 2])
         end
         function metricsAreCorrect(testCase)
             addpath('src');
