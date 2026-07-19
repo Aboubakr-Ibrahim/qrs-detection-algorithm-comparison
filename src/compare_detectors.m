@@ -8,18 +8,30 @@ arguments
     recordId (1,1) string = "record"
     outputDir (1,1) string = ""
 end
-signal=preprocess_ecg(ecg,fs,cfg);
-[panPeaks,panDiagnostic]=detect_qrs_pan_tompkins(signal.filtered,fs,cfg);
-[waveletPeaks,waveletDiagnostic]=detect_qrs_wavelet(signal.filtered,fs,cfg);
-tolerance=round(cfg.matchToleranceSec*fs);
-panMatches=match_annotations(panPeaks,referencePeaks,tolerance);
-waveletMatches=match_annotations(waveletPeaks,referencePeaks,tolerance);
-panMetrics=compute_detection_metrics(panMatches,fs);
-waveletMetrics=compute_detection_metrics(waveletMatches,fs);
-summary=struct2table([add_label(panMetrics,"Pan-Tompkins");...
+
+ecg = double(ecg(:));
+referencePeaks = double(referencePeaks(:));
+assert(all(isfinite(referencePeaks)), 'QRS:NonfiniteAnnotation', ...
+    'Reference peak indices must be finite.');
+assert(all(referencePeaks == round(referencePeaks)), ...
+    'QRS:NonintegerAnnotation', 'Reference peak indices must be integers.');
+referencePeaks = unique(sort(referencePeaks));
+assert(all(referencePeaks >= 1 & referencePeaks <= numel(ecg)), ...
+    'QRS:AnnotationBounds', ...
+    'Reference peak indices must use MATLAB 1-based signal coordinates.');
+
+signal = preprocess_ecg(ecg,fs,cfg);
+[panPeaks,panDiagnostic] = detect_qrs_pan_tompkins(signal.filtered,fs,cfg);
+[waveletPeaks,waveletDiagnostic] = detect_qrs_wavelet(signal.filtered,fs,cfg);
+tolerance = round(cfg.matchToleranceSec*fs);
+panMatches = match_annotations(panPeaks,referencePeaks,tolerance);
+waveletMatches = match_annotations(waveletPeaks,referencePeaks,tolerance);
+panMetrics = compute_detection_metrics(panMatches,fs);
+waveletMetrics = compute_detection_metrics(waveletMatches,fs);
+summary = struct2table([add_label(panMetrics,"Pan-Tompkins"); ...
     add_label(waveletMetrics,"Wavelet")]);
-comparison=struct('recordId',recordId,'fs',fs,'signal',signal,...
-    'referencePeaks',referencePeaks(:),'panPeaks',panPeaks,...
+comparison = struct('recordId',recordId,'fs',fs,'signal',signal,...
+    'referencePeaks',referencePeaks,'panPeaks',panPeaks,...
     'waveletPeaks',waveletPeaks,'panDiagnostic',panDiagnostic,...
     'waveletDiagnostic',waveletDiagnostic,'panMatches',panMatches,...
     'waveletMatches',waveletMatches,'summary',summary);
@@ -30,6 +42,6 @@ if strlength(outputDir)>0 && cfg.saveFigures
 end
 end
 
-function output=add_label(metrics,label)
-output=metrics; output.Algorithm=label;
+function output = add_label(metrics,label)
+output = metrics; output.Algorithm = label;
 end
