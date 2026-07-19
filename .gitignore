@@ -1,0 +1,12 @@
+*.asv
+*.autosave
+*.m~
+*.mex*
+data/*
+!data/README.md
+results/*
+!results/README.md
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
